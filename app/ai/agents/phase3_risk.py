@@ -4,6 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from pydantic import BaseModel, Field
 from typing import List, Dict
 
+from app.ai.tools.component_search import Engineering_Research_Scraper
 from app.core.config import settings
 from app.ai.tools.risk_databases import FMEA_Lookup
 from app.ai.agents.validators import ValidationResult
@@ -16,17 +17,23 @@ class RiskItem(BaseModel):
 class RiskChecklist(BaseModel):
     risks: List[RiskItem] = Field(description="List of engineering risks and trade-offs.")
 
+class SWOTAnalysis(BaseModel):
+    strengths: List[str]
+    weaknesses: List[str] = Field(description="Highlight if BOM cost from phase 2 > market price found in scraping.")
+    opportunities: List[str] = Field(description="Needs identified from Reddit/Social sentiment.")
+    threats: List[str] = Field(description="Legal risks from Google Patents claims.")
+
 # Generator
 generator_llm = ChatGroq(temperature=0.7, model_name="llama-3.3-70b-versatile", groq_api_key=settings.GROQ_API_KEY)
-generator_with_tools = generator_llm.bind_tools([FMEA_Lookup])
+generator_with_tools = generator_llm.bind_tools([Engineering_Research_Scraper])
 
 generator_prompt = ChatPromptTemplate.from_messages([
-    ("system", "You are a Risk Analyst. Identify early engineering risks and trade-offs based on the physical solution mechanisms selected. Rules:\n1) Focus strictly on Mechanical, Electrical, Thermal, Manufacturing, and Integration domains.\n2) Reject generic business/market risks.\n3) Clearly identify an engineering cause and the related design trade-off.\nYou can use FMEA_Lookup tool to get standard risk categories."),
-    ("human", "Problem Statement: {problem_statement}\nMorphological Chart (Selected Options): {morphological_alternatives}\n\nValidation Feedback (if any): {validation_feedback}\n\nPlease generate the risk checklist.")
+    ("system", "You are a Market & Risk Agent. Use 'Engineering_Research_Scraper' with phase='phase3' to check patents and sentiment..."),
+    ("human", "Goal: {problem_statement}\nMorphology: {morphological_alternatives}")
 ])
 
-phase3_generator = generator_prompt | generator_with_tools.with_structured_output(RiskChecklist)
 
+phase3_generator = generator_prompt | generator_llm.bind_tools([Engineering_Research_Scraper]).with_structured_output(SWOTAnalysis)
 # Validator
 validator_llm = ChatGroq(temperature=0.0, model_name="mixtral-8x7b-32768", groq_api_key=settings.GROQ_API_KEY)
 

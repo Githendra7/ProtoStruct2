@@ -63,12 +63,16 @@ def check_validity_phase2(state: EngineeringState):
 
 # --- Phase 3 Nodes ---
 def generate_phase3(state: EngineeringState):
+    # This node now explicitly passes the previous phase's output to the SWOT generator
     checklist = phase3_generator.invoke({
         "problem_statement": state["problem_statement"],
         "morphological_alternatives": json.dumps(state.get("morphological_alternatives", {})),
         "validation_feedback": state.get("validation_feedback", "")
     })
-    return {"risk_checklist": checklist.dict(), "revision_count": 1}
+    return {
+        "risk_checklist": checklist.model_dump(), 
+        "revision_count": state.get("revision_count", 0) + 1
+    }
 
 def validate_phase3(state: EngineeringState):
     res = phase3_validator.invoke({"risk_checklist": json.dumps(state["risk_checklist"])})
