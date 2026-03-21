@@ -2,15 +2,17 @@ pipeline {
     agent any
     environment {
         AWS_ACCOUNT_ID = '625966732962'
-        AWS_REGION     = 'us-east-1'
+        // CHANGED: Fixed to match your Stockholm (eu-north-1) repository location
+        AWS_REGION     = 'eu-north-1'
         BACKEND_REPO   = 'protostruct-backend'
         FRONTEND_REPO  = 'protostruct-frontend'
-        // This must match the ID you created in Jenkins -> Credentials
+        // Ensure 'aws-creds' matches your ID in Jenkins -> Credentials
         AWS_CREDS      = credentials('aws-creds') 
     }
     stages {
         stage('Install & Login') {
             steps {
+                // Using %VAR% syntax since your logs show you are running on a Windows Jenkins agent (bat)
                 bat "aws ecr get-login-password --region %AWS_REGION% | docker login --username AWS --password-stdin %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com"
             }
         }
@@ -25,7 +27,7 @@ pipeline {
         }
         stage('Build Frontend') {
             steps {
-                // Navigating to where your package.json is located
+                // Pointing to your 'next-app' directory inside frontend
                 dir('frontend/next-app') {
                     bat "docker build -t %FRONTEND_REPO% ."
                     bat "docker tag %FRONTEND_REPO%:latest %AWS_ACCOUNT_ID%.dkr.ecr.%AWS_REGION%.amazonaws.com/%FRONTEND_REPO%:latest"
@@ -36,10 +38,10 @@ pipeline {
     }
     post {
         success {
-            echo "Successfully pushed ProtoStruct2 images to AWS ECR!"
+            echo "Successfully pushed ProtoStruct2 images to AWS ECR in %AWS_REGION%!"
         }
         failure {
-            echo "Deployment failed. Check the Dockerfiles or AWS Credentials."
+            echo "Deployment failed. Verify the ECR repository exists in %AWS_REGION%."
         }
     }
 }
