@@ -1,4 +1,4 @@
-FROM node:18-alpine
+FROM node:20-alpine
 WORKDIR /app
 COPY package*.json ./
 # ADDED: --legacy-peer-deps to handle the date-fns conflict
