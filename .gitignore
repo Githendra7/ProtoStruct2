@@ -54,3 +54,47 @@ pip-delete-this-directory.txt
 # OS
 .DS_Store
 Thumbs.db
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.venv/
+venv/
+ENV/
+env/
+
+# Frontend Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# Debug logs and local files
+*.log
+debug_log.txt
+direct_output.json
+e2e_output.txt
+error.txt
+out.json
+out.txt
+output_risk.txt
+output.txt
+
+# Secrets and local config
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDEs
+.vscode/
+.idea/
