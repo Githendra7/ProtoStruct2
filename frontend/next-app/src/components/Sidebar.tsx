@@ -10,10 +10,12 @@ import {
     User, 
     ChevronUp, 
     ChevronDown,
-    LayoutDashboard
+    LayoutDashboard,
+    LogOut
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { getRecentProjects } from '@/lib/api';
+import { supabase } from '@/lib/supabaseClient';
 
 type Project = {
     id: string;
@@ -28,20 +30,29 @@ export function Sidebar() {
     
     const [projects, setProjects] = useState<Project[]>([]);
     const [loading, setLoading] = useState(true);
+    const [user, setUser] = useState<any>(null);
 
     useEffect(() => {
-        async function fetchProjects() {
+        async function fetchInitialData() {
             try {
+                const { data: { session } } = await supabase.auth.getSession();
+                setUser(session?.user || null);
+
                 const data = await getRecentProjects(15);
                 setProjects(data);
             } catch (err) {
-                console.error("Failed to load projects", err);
+                console.error("Failed to load initial data", err);
             } finally {
                 setLoading(false);
             }
         }
-        fetchProjects();
+        fetchInitialData();
     }, []);
+
+    const handleLogout = async () => {
+        await supabase.auth.signOut();
+        router.push('/login');
+    };
 
     const handleNewProject = () => {
         router.push('/');
@@ -128,13 +139,22 @@ export function Sidebar() {
                         <Settings className="h-5 w-5 text-zinc-400 group-hover:text-zinc-900" />
                         Settings
                     </button>
-                    <div className="flex items-center gap-3 px-4 py-3">
-                        <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-black text-xs">
-                            JD
+                    <button 
+                        onClick={handleLogout}
+                        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-bold text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all group"
+                    >
+                        <LogOut className="h-5 w-5 text-red-400 group-hover:text-red-600" />
+                        Log out
+                    </button>
+                    <div className="flex items-center gap-3 px-4 py-3 border-t border-zinc-100 pt-4 mt-2">
+                        <div className="h-9 w-9 rounded-full bg-zinc-900 text-white flex items-center justify-center font-black text-xs shrink-0 shadow-sm border border-zinc-700 uppercase">
+                            {user?.email?.substring(0, 2) || '??'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <div className="text-sm font-bold text-zinc-900 truncate">John Doe</div>
-                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest">Admin</div>
+                            <div className="text-sm font-bold text-zinc-900 truncate">{user?.email || 'N/A'}</div>
+                            <div className="text-[10px] font-bold text-zinc-400 uppercase tracking-widest leading-none mt-0.5">
+                                {user ? 'User' : 'Guest'}
+                            </div>
                         </div>
                     </div>
                 </div>

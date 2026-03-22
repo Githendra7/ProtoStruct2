@@ -1,17 +1,22 @@
+import { supabase } from './supabaseClient';
+
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
-// Since the backend uses "get_current_user" with a dummy or actual user, we'll
-// mock a user authentication header for now if needed, though testing locally might just bypass it.
-const defaultHeaders = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer test-token',
-    // In a real app, you would add an Authorization header here.
-};
+async function getAuthHeaders() {
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token || 'test-token';
+    
+    return {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+    };
+}
 
 export async function createProject(problemStatement: string) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects`, {
         method: 'POST',
-        headers: defaultHeaders,
+        headers,
         body: JSON.stringify({ problem_statement: problemStatement }),
     });
 
@@ -23,9 +28,10 @@ export async function createProject(problemStatement: string) {
 }
 
 export async function getRecentProjects(limit: number = 10) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects?limit=${limit}`, {
         method: 'GET',
-        headers: defaultHeaders,
+        headers,
     });
 
     if (!response.ok) {
@@ -36,9 +42,10 @@ export async function getRecentProjects(limit: number = 10) {
 }
 
 export async function getProject(projectId: string) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
         method: 'GET',
-        headers: defaultHeaders,
+        headers,
     });
 
     if (!response.ok) {
@@ -49,9 +56,10 @@ export async function getProject(projectId: string) {
 }
 
 export async function runPhase(projectId: string, phaseName: string) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/run-phase/${phaseName}`, {
         method: 'POST',
-        headers: defaultHeaders,
+        headers,
     });
 
     if (!response.ok) {
@@ -62,9 +70,10 @@ export async function runPhase(projectId: string, phaseName: string) {
 }
 
 export async function getPhase(projectId: string, phaseName: string) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/phase/${phaseName}`, {
         method: 'GET',
-        headers: defaultHeaders,
+        headers,
     });
 
     if (!response.ok) {
@@ -76,9 +85,10 @@ export async function getPhase(projectId: string, phaseName: string) {
 }
 
 export async function updatePhase(projectId: string, phaseName: string, humanApprovedData: any) {
+    const headers = await getAuthHeaders();
     const response = await fetch(`${API_BASE_URL}/projects/${projectId}/phase/${phaseName}`, {
         method: 'PUT',
-        headers: defaultHeaders,
+        headers,
         body: JSON.stringify({ human_approved_data: humanApprovedData }),
     });
 
