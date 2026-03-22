@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +14,16 @@ export default function ForgotPasswordPage() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const emailParam = params.get("email");
+      if (emailParam) {
+        setEmail(decodeURIComponent(emailParam));
+      }
+    }
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -84,9 +94,9 @@ export default function ForgotPasswordPage() {
                   type="email"
                   placeholder="you@company.com"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  readOnly
                   required
-                  className="pl-10 h-13 border-border focus:border-primary transition-all rounded-xl shadow-sm text-lg"
+                  className="pl-10 h-13 border-zinc-100 bg-zinc-50/50 text-zinc-500 cursor-not-allowed transition-all rounded-xl shadow-sm text-lg focus-visible:ring-0"
                 />
               </div>
             </div>

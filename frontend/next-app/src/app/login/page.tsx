@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogIn, Mail, Lock, ArrowRight, AlertCircle } from "lucide-react";
+import { LogIn, Mail, Lock, ArrowRight, AlertCircle, Eye, EyeOff } from "lucide-react";
 import { motion } from "motion/react";
 import { supabase } from "@/lib/supabaseClient";
 
@@ -16,6 +16,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,19 +130,26 @@ export default function LoginPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center">
                 <Label htmlFor="password" className="text-zinc-700 font-bold">Password</Label>
-                <Link href="/forgot-password" data-id="forgot-password-link" className="text-sm font-bold text-zinc-900 hover:underline">Forgot password?</Link>
+                <Link href={`/forgot-password?email=${encodeURIComponent(email)}`} data-id="forgot-password-link" className="text-sm font-bold text-zinc-900 hover:underline">Forgot password?</Link>
               </div>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-zinc-400" />
                 <Input
                   id="password"
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="pl-10 h-12 border-zinc-200 focus:border-zinc-900 transition-all rounded-xl"
+                  className="pl-10 pr-10 h-12 border-zinc-200 focus:border-zinc-900 transition-all rounded-xl"
                 />
+                <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-900 focus:outline-none"
+                >
+                    {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
